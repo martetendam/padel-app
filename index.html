@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Padel">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<title>Padel reserveren</title>
+<style>
+:root {
+  --bg: #f2f2f7; --kaart: #ffffff; --tekst: #1c1c1e; --zacht: #6c6c70; --lijn: #d8d8dc;
+  --accent: #0a7d4f; --accent-tekst: #ffffff; --rood: #c62828; --oranje: #b35c00; --blauw: #1f5fbf;
+  --veld: #f7f7fa;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000; --kaart: #1c1c1e; --tekst: #f2f2f7; --zacht: #a1a1a6; --lijn: #38383a;
+    --accent: #30c27f; --accent-tekst: #04140c; --rood: #ff6b6b; --oranje: #ffa94d; --blauw: #74a7ff;
+    --veld: #2c2c2e;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--tekst);
+  font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; }
+body { padding: max(12px, env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); }
+main { max-width: 560px; margin: 0 auto; }
+header { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 16px; }
+h1 { font-size: 28px; margin: 0; letter-spacing: -0.02em; }
+h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--zacht); margin: 24px 4px 8px; }
+.kaart { background: var(--kaart); border-radius: 14px; padding: 16px; }
+label { display: block; font-size: 14px; color: var(--zacht); margin: 12px 0 4px; }
+label:first-child { margin-top: 0; }
+input, select { width: 100%; font: inherit; color: var(--tekst); background: var(--veld);
+  border: 1px solid var(--lijn); border-radius: 10px; padding: 11px 12px; min-height: 44px;
+  -webkit-appearance: none; appearance: none; }
+input[type=checkbox], input[type=radio] { width: 22px; height: 22px; min-height: 0; padding: 0;
+  -webkit-appearance: auto; appearance: auto; accent-color: var(--accent); flex: none; }
+.rij { display: flex; gap: 10px; }
+.rij > * { flex: 1; min-width: 0; }
+.vink { display: flex; align-items: center; gap: 10px; margin-top: 14px; color: var(--tekst); font-size: 15px; }
+button { font: inherit; font-weight: 600; border: 0; border-radius: 12px; min-height: 48px; padding: 0 16px;
+  background: var(--accent); color: var(--accent-tekst); width: 100%; margin-top: 16px; cursor: pointer; }
+button.klein { width: auto; min-height: 36px; margin: 0; padding: 0 12px; font-size: 14px;
+  background: var(--veld); color: var(--tekst); border: 1px solid var(--lijn); }
+button.gevaar { color: var(--rood); }
+button:disabled { opacity: .5; }
+.icoonknop { width: 44px; height: 44px; min-height: 44px; padding: 0; margin: 0; border-radius: 22px;
+  background: var(--kaart); color: var(--tekst); font-size: 22px; }
+.hint { font-size: 14px; color: var(--zacht); margin: 10px 0 0; }
+.melding { border-radius: 12px; padding: 12px 14px; margin: 12px 0 0; font-size: 15px; }
+.melding.ok { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.melding.fout { background: color-mix(in srgb, var(--rood) 16%, transparent); }
+.opdracht { border-top: 1px solid var(--lijn); padding: 14px 0; }
+.opdracht:first-child { border-top: 0; padding-top: 0; }
+.opdracht:last-child { padding-bottom: 0; }
+.kop { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.kop strong { font-size: 17px; }
+.status { font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.s-wachten { color: var(--blauw); background: color-mix(in srgb, var(--blauw) 14%, transparent); }
+.s-geboekt { color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.s-mislukt { color: var(--rood); background: color-mix(in srgb, var(--rood) 14%, transparent); }
+.s-controleren { color: var(--oranje); background: color-mix(in srgb, var(--oranje) 16%, transparent); }
+.details { font-size: 14px; color: var(--zacht); margin-top: 4px; overflow-wrap: anywhere; }
+.knoppen { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.leeg { color: var(--zacht); font-size: 15px; margin: 0; }
+.run { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; padding: 6px 0; }
+.run a { color: var(--blauw); text-decoration: none; }
+details summary { cursor: pointer; color: var(--zacht); font-size: 14px; margin-top: 12px; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Padel reserveren</h1>
+    <button class="icoonknop" id="knopInstellingen" aria-label="Instellingen">⚙︎</button>
+  </header>
+
+  <!-- Instellingen -->
+  <section id="instellingen" hidden>
+    <h2>GitHub-koppeling</h2>
+    <div class="kaart">
+      <label for="token">GitHub-token (begint met ghp_)</label>
+      <input id="token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <label for="repo">Opslagplaats</label>
+      <input id="repo" autocapitalize="off" spellcheck="false">
+      <button id="bewaarGithub">Koppeling bewaren</button>
+      <p class="hint">De token blijft alleen op deze telefoon.</p>
+    </div>
+
+    <h2>Inloggegevens club</h2>
+    <div class="kaart">
+      <p class="hint" id="clubStatus" style="margin-top:0">Nog niet gecontroleerd.</p>
+      <label>Inloggen met</label>
+      <div class="rij">
+        <label class="vink" style="margin:0"><input type="radio" name="logintype" value="bondsnummer" checked> Bondsnummer</label>
+        <label class="vink" style="margin:0"><input type="radio" name="logintype" value="clublidnummer"> Clublidnummer</label>
+      </div>
+      <label for="clubnummer">Nummer</label>
+      <input id="clubnummer" inputmode="numeric" autocomplete="username">
+      <label for="clubww">Wachtwoord</label>
+      <input id="clubww" type="password" autocomplete="current-password">
+      <button id="bewaarClub">Versleuteld opslaan in GitHub</button>
+      <p class="hint">Wordt versleuteld als GitHub-secret bewaard; ook deze app kan het daarna niet meer lezen.</p>
+    </div>
+    <button class="klein" id="sluitInstellingen" style="width:100%;margin-top:16px;min-height:44px">Klaar</button>
+  </section>
+
+  <!-- Hoofdscherm -->
+  <section id="hoofd">
+    <div id="algemeenMelding"></div>
+
+    <h2>Nieuwe reservering</h2>
+    <form class="kaart" id="formulier" autocomplete="off">
+      <div class="rij">
+        <div><label for="datum">Dag</label><input id="datum" type="date" required></div>
+        <div><label for="tijd">Tijd</label><select id="tijd" required></select></div>
+      </div>
+      <label for="baan">Baan</label>
+      <select id="baan"></select>
+      <input id="baanTekst" placeholder="bijv. Padel 2" hidden>
+      <label class="vink"><input type="checkbox" id="andereBaan" checked> Andere padelbaan is ook goed als deze bezet is</label>
+      <label for="speler1">Medespelers</label>
+      <input id="speler1" list="spelerslijst" placeholder="Voor- en achternaam" required>
+      <input id="speler2" list="spelerslijst" placeholder="Voor- en achternaam" required style="margin-top:8px">
+      <input id="speler3" list="spelerslijst" placeholder="Voor- en achternaam" required style="margin-top:8px">
+      <datalist id="spelerslijst"></datalist>
+      <p class="hint" id="wanneer">Kies een dag.</p>
+      <button type="submit" id="knopInplannen">Inplannen</button>
+      <div id="formMelding"></div>
+    </form>
+
+    <h2>Opdrachten</h2>
+    <div class="kaart" id="opdrachten"><p class="leeg">Laden...</p></div>
+
+    <h2>Laatste runs</h2>
+    <div class="kaart" id="runs"><p class="leeg">Laden...</p></div>
+  </section>
+</main>
+
+<script>
+const STANDAARD_REPO = "martetendam/padel-reserveren";
+const WORKFLOW = "reserveer.yml";
+const DAGEN_VOORUIT = 7, OPEN_UUR = 3;
+const $ = id => document.getElementById(id);
+
+// ── opslag op de telefoon (alleen token en repo) ──
+function lees(k, d = "") { try { return localStorage.getItem(k) ?? d; } catch { return d; } }
+function schrijf(k, v) { try { localStorage.setItem(k, v); } catch {} }
+let TOKEN = lees("padel_token");
+let REPO = lees("padel_repo", STANDAARD_REPO);
+
+// ── GitHub API ──
+async function gh(pad, opties = {}) {
+  const r = await fetch("https://api.github.com" + pad, {
+    ...opties,
+    headers: { "Authorization": "Bearer " + TOKEN, "Accept": opties.accept || "application/vnd.github+json",
+               "X-GitHub-Api-Version": "2022-11-28", ...(opties.body ? { "Content-Type": "application/json" } : {}) },
+  });
+  if (r.status === 204) return null;
+  const tekst = await r.text();
+  if (!r.ok) {
+    const e = new Error(r.status === 401 ? "GitHub-token ongeldig of verlopen." :
+      r.status === 404 ? "Niet gevonden (" + pad + ")" : "GitHub-fout " + r.status + ": " + tekst.slice(0, 200));
+    e.status = r.status; throw e;
+  }
+  try { return JSON.parse(tekst); } catch { return tekst; }
+}
+const b64 = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+async function leesBestand(pad) {
+  try { return await gh(`/repos/${REPO}/contents/${pad}`, { accept: "application/vnd.github.raw+json" }); }
+  catch (e) { if (e.status === 404) return null; throw e; }
+}
+
+// ── hulpjes ──
+const DAGEN = ["zo", "ma", "di", "wo", "do", "vr", "za"];
+const MAANDEN = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+function datumLokaal(iso) { const [j, m, d] = iso.split("-").map(Number); return new Date(j, m - 1, d); }
+function mooiDatum(iso) { const d = datumLokaal(iso); return `${DAGEN[d.getDay()]} ${d.getDate()} ${MAANDEN[d.getMonth()]}`; }
+function opening(iso) { const d = datumLokaal(iso); d.setDate(d.getDate() - DAGEN_VOORUIT); d.setHours(OPEN_UUR, 0, 0, 0); return d; }
+function vandaagIso() { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); }
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function toon(el, tekst, soort = "ok") { $(el).innerHTML = tekst ? `<div class="melding ${soort}">${esc(tekst)}</div>` : ""; }
+
+// ── formulier voorbereiden ──
+for (let u = 7; u <= 23; u++) for (const m of ["00", "30"]) {
+  if (u === 23 && m === "30") continue;
+  const t = String(u).padStart(2, "0") + ":" + m;
+  $("tijd").add(new Option(t, t, false, t === "19:00"));
+}
+$("datum").min = vandaagIso();
+$("datum").addEventListener("change", werkWanneerBij);
+function werkWanneerBij() {
+  const iso = $("datum").value;
+  if (!iso) { $("wanneer").textContent = "Kies een dag."; return; }
+  const o = opening(iso);
+  if (o <= new Date()) $("wanneer").textContent = "Reserveren kan al: de app probeert het meteen.";
+  else $("wanneer").textContent = `Wordt automatisch gereserveerd op ${DAGEN[o.getDay()]} ${o.getDate()} ${MAANDEN[o.getMonth()]} om 03:00.`;
+}
+
+async function laadKeuzelijsten() {
+  const [banen, spelers] = await Promise.all([leesBestand("banen.json"), leesBestand("spelers.json")]);
+  const lijst = Array.isArray(banen) ? banen.filter(b => /padel/i.test(b)) : [];
+  const sel = $("baan"); sel.innerHTML = "";
+  if (lijst.length) {
+    sel.hidden = false; $("baanTekst").hidden = true;
+    sel.add(new Option("Maakt niet uit", ""));
+    lijst.forEach(b => sel.add(new Option(b, b)));
+    sel.value = lees("padel_baan", lijst[0]);
+    if (sel.selectedIndex < 0) sel.selectedIndex = 1;
+  } else {
+    sel.hidden = true; $("baanTekst").hidden = false;
+    $("baanTekst").value = lees("padel_baan", "");
+  }
+  $("spelerslijst").innerHTML = (Array.isArray(spelers) ? spelers : []).map(n => `<option value="${esc(n)}">`).join("");
+}
+
+// ── opdrachten ──
+let opdrachten = [];
+async function laadOpdrachten() {
+  let lijst;
+  try { lijst = await gh(`/repos/${REPO}/contents/wachtrij`); }
+  catch (e) { if (e.status === 404) lijst = []; else throw e; }
+  const bestanden = (lijst || []).filter(f => f.name.endsWith(".json"));
+  opdrachten = await Promise.all(bestanden.map(async f => {
+    const inhoud = await gh(`/repos/${REPO}/contents/${f.path}`, { accept: "application/vnd.github.raw+json" });
+    const o = typeof inhoud === "string" ? JSON.parse(inhoud) : inhoud;
+    return { ...o, _pad: f.path, _sha: f.sha };
+  }));
+  opdrachten.sort((a, b) => (a.datum + a.tijd).localeCompare(b.datum + b.tijd));
+  tekenOpdrachten();
+}
+
+function tekenOpdracht(o) {
+  const open = opening(o.datum) <= new Date();
+  const statusTekst = { wachten: !open ? "Ingepland" : ((o.pogingen || []).some(p => p.modus !== "test") ? "Wacht op herkansing" : "Wordt gereserveerd"), geboekt: "Gereserveerd",
+                        mislukt: "Mislukt", controleren: "Controleren" }[o.status] || o.status;
+  let details = `Baan: ${o.baan || "maakt niet uit"}${o.andere_baan_ok ? " (andere ook goed)" : ""}<br>` +
+                `Met: ${(o.spelers || []).map(esc).join(", ")}`;
+  if (o.status === "wachten" && !open) {
+    const d = opening(o.datum);
+    details += `<br>Reserveert op ${DAGEN[d.getDay()]} ${d.getDate()} ${MAANDEN[d.getMonth()]} om 03:00`;
+  }
+  if (o.resultaat) details += `<br>${esc(o.resultaat)}`;
+  if (o.laatste_test) details += `<br>Laatste test: ${esc(o.laatste_test.melding)}`;
+  const knoppen = [];
+  if (o.status !== "geboekt") knoppen.push(`<button class="klein" data-actie="test" data-id="${esc(o.id)}">Test</button>`);
+  if (o.status !== "geboekt" && open) knoppen.push(`<button class="klein" data-actie="direct" data-id="${esc(o.id)}">Nu proberen</button>`);
+  knoppen.push(`<button class="klein gevaar" data-actie="weg" data-id="${esc(o.id)}">Verwijderen</button>`);
+  return `<div class="opdracht">
+    <div class="kop"><strong>${mooiDatum(o.datum)} · ${esc(o.tijd)}</strong>
+      <span class="status s-${esc(o.status)}">${esc(statusTekst)}</span></div>
+    <div class="details">${o.status === "geboekt" && o.geboekte_baan ? "Geboekt: " + esc(o.geboekte_baan) + "<br>" : ""}${details}</div>
+    <div class="knoppen">${knoppen.join("")}</div></div>`;
+}
+
+function tekenOpdrachten() {
+  const vandaag = vandaagIso();
+  const actueel = opdrachten.filter(o => o.datum >= vandaag);
+  const oud = opdrachten.filter(o => o.datum < vandaag).reverse();
+  let html = actueel.length ? actueel.map(tekenOpdracht).join("") : `<p class="leeg">Nog geen opdrachten.</p>`;
+  if (oud.length) html += `<details><summary>Eerdere (${oud.length})</summary>${oud.map(tekenOpdracht).join("")}</details>`;
+  $("opdrachten").innerHTML = html;
+}
+
+$("opdrachten").addEventListener("click", async e => {
+  const knop = e.target.closest("button[data-actie]"); if (!knop) return;
+  const o = opdrachten.find(x => x.id === knop.dataset.id); if (!o) return;
+  knop.disabled = true;
+  try {
+    if (knop.dataset.actie === "weg") {
+      if (!confirm(`Opdracht voor ${mooiDatum(o.datum)} ${o.tijd} verwijderen? (Een al gemaakte reservering blijft bestaan.)`)) { knop.disabled = false; return; }
+      await gh(`/repos/${REPO}/contents/${o._pad}`, { method: "DELETE",
+        body: JSON.stringify({ message: `Opdracht ${o.id} verwijderd`, sha: o._sha }) });
+      toon("algemeenMelding", "Opdracht verwijderd.");
+      await laadOpdrachten();
+    } else {
+      await start(knop.dataset.actie, o.id);
+      toon("algemeenMelding", knop.dataset.actie === "test"
+        ? "Test gestart: loopt alles door tot vlak voor bevestigen. Resultaat na ± 2 minuten (ververs dan)."
+        : "Reservering gestart. Resultaat na ± 2 minuten (ververs dan).");
+      setTimeout(laadRuns, 4000);
+    }
+  } catch (err) { toon("algemeenMelding", err.message, "fout"); }
+  knop.disabled = false;
+});
+
+async function start(modus, id) {
+  await gh(`/repos/${REPO}/actions/workflows/${WORKFLOW}/dispatches`, { method: "POST",
+    body: JSON.stringify({ ref: "main", inputs: { modus, id } }) });
+}
+
+// ── nieuwe opdracht ──
+$("formulier").addEventListener("submit", async e => {
+  e.preventDefault();
+  toon("formMelding", "");
+  const datum = $("datum").value, tijd = $("tijd").value;
+  const baan = $("baan").hidden ? $("baanTekst").value.trim() : $("baan").value;
+  const spelers = ["speler1", "speler2", "speler3"].map(id => $(id).value.trim().replace(/\s+/g, " "));
+  if (!datum) return toon("formMelding", "Kies een dag.", "fout");
+  if (datum < vandaagIso()) return toon("formMelding", "Die dag is al voorbij.", "fout");
+  if (spelers.some(s => s.split(" ").length < 2)) return toon("formMelding", "Vul van alle 3 medespelers voor- én achternaam in.", "fout");
+  const id = `${datum}_${tijd.replace(":", "")}_${Math.random().toString(36).slice(2, 6)}`;
+  const opdracht = { id, datum, tijd, baan, andere_baan_ok: $("andereBaan").checked, spelers,
+                     status: "wachten", aangemaakt: new Date().toISOString() };
+  $("knopInplannen").disabled = true;
+  try {
+    await gh(`/repos/${REPO}/contents/wachtrij/${id}.json`, { method: "PUT",
+      body: JSON.stringify({ message: `Nieuwe opdracht ${datum} ${tijd}`, content: b64(JSON.stringify(opdracht, null, 2) + "\n") }) });
+    schrijf("padel_baan", baan);
+    const o = opening(datum);
+    if (o <= new Date()) {
+      await new Promise(r => setTimeout(r, 1500));   // even wachten tot GitHub het bestand kent
+      await start("direct", id);
+      toon("formMelding", "Ingepland en de reservering is gestart. Resultaat na ± 2 minuten.");
+    } else {
+      toon("formMelding", `Ingepland. Wordt gereserveerd op ${DAGEN[o.getDay()]} ${o.getDate()} ${MAANDEN[o.getMonth()]} om 03:00.`);
+    }
+    ["speler1", "speler2", "speler3"].forEach(i => schrijf("padel_" + i, $(i).value));
+    await laadOpdrachten();
+    setTimeout(laadRuns, 4000);
+  } catch (err) { toon("formMelding", err.message, "fout"); }
+  $("knopInplannen").disabled = false;
+});
+["speler1", "speler2", "speler3"].forEach(i => $(i).value = lees("padel_" + i, ""));
+
+// ── runs ──
+async function laadRuns() {
+  try {
+    const d = await gh(`/repos/${REPO}/actions/workflows/${WORKFLOW}/runs?per_page=6`);
+    const runs = (d.workflow_runs || []);
+    if (!runs.length) { $("runs").innerHTML = `<p class="leeg">Nog geen runs.</p>`; return; }
+    const uitleg = r => r.status !== "completed" ? "bezig…" :
+      ({ success: "✓ gelukt", failure: "✗ mislukt", cancelled: "geannuleerd", skipped: "overgeslagen" }[r.conclusion] || r.conclusion);
+    $("runs").innerHTML = runs.map(r => {
+      const t = new Date(r.created_at);
+      const soort = r.event === "schedule" ? "nacht" : "handmatig";
+      return `<div class="run"><span>${DAGEN[t.getDay()]} ${t.getDate()} ${MAANDEN[t.getMonth()]} ${t.toTimeString().slice(0, 5)} · ${soort}</span>
+              <a href="${esc(r.html_url)}" target="_blank" rel="noopener">${esc(uitleg(r))}</a></div>`;
+    }).join("");
+  } catch (e) { $("runs").innerHTML = `<p class="leeg">${esc(e.message)}</p>`; }
+}
+
+// ── instellingen ──
+function toonInstellingen(aan) { $("instellingen").hidden = !aan; $("hoofd").hidden = aan; if (aan) controleerClub(); }
+$("knopInstellingen").onclick = () => toonInstellingen($("instellingen").hidden);
+$("sluitInstellingen").onclick = () => { toonInstellingen(false); laadAlles(); };
+$("token").value = TOKEN; $("repo").value = REPO;
+$("bewaarGithub").onclick = async () => {
+  TOKEN = $("token").value.trim(); REPO = $("repo").value.trim();
+  schrijf("padel_token", TOKEN); schrijf("padel_repo", REPO);
+  try { await gh(`/repos/${REPO}`); $("clubStatus").textContent = "Koppeling werkt."; controleerClub(); }
+  catch (e) { $("clubStatus").textContent = e.message; }
+};
+
+async function controleerClub() {
+  if (!TOKEN) { $("clubStatus").textContent = "Vul eerst de GitHub-token in."; return; }
+  try {
+    const d = await gh(`/repos/${REPO}/actions/secrets`);
+    const namen = (d.secrets || []).map(s => s.name);
+    const ok = namen.includes("KNLTB_GEBRUIKER") && namen.includes("KNLTB_WACHTWOORD");
+    const s = (d.secrets || []).find(s => s.name === "KNLTB_WACHTWOORD");
+    $("clubStatus").textContent = ok ? `✓ Inloggegevens opgeslagen (${new Date(s.updated_at).toLocaleDateString("nl-NL")}). Opnieuw invullen overschrijft ze.`
+                                     : "Nog geen inloggegevens opgeslagen.";
+  } catch (e) { $("clubStatus").textContent = e.message; }
+}
+
+let sodiumKlaar = null;
+function laadSodium() {
+  sodiumKlaar ??= import("https://cdn.jsdelivr.net/npm/libsodium-wrappers@0.7.15/+esm")
+    .then(async m => { const s = m.default || m; await s.ready; return s; });
+  return sodiumKlaar;
+}
+async function zetSecret(naam, waarde, sleutel, sodium) {
+  const versleuteld = sodium.crypto_box_seal(sodium.from_string(waarde),
+    sodium.from_base64(sleutel.key, sodium.base64_variants.ORIGINAL));
+  await gh(`/repos/${REPO}/actions/secrets/${naam}`, { method: "PUT", body: JSON.stringify({
+    encrypted_value: sodium.to_base64(versleuteld, sodium.base64_variants.ORIGINAL), key_id: sleutel.key_id }) });
+}
+$("bewaarClub").onclick = async () => {
+  const nummer = $("clubnummer").value.trim(), ww = $("clubww").value;
+  const type = document.querySelector("input[name=logintype]:checked").value;
+  if (!nummer || !ww) { $("clubStatus").textContent = "Vul nummer en wachtwoord in."; return; }
+  $("bewaarClub").disabled = true; $("clubStatus").textContent = "Bezig met versleutelen...";
+  try {
+    const [sodium, sleutel] = await Promise.all([laadSodium(), gh(`/repos/${REPO}/actions/secrets/public-key`)]);
+    await zetSecret("KNLTB_GEBRUIKER", nummer, sleutel, sodium);
+    await zetSecret("KNLTB_WACHTWOORD", ww, sleutel, sodium);
+    await zetSecret("KNLTB_LOGINTYPE", type, sleutel, sodium);
+    $("clubww").value = "";
+    await controleerClub();
+  } catch (e) { $("clubStatus").textContent = "Opslaan mislukt: " + e.message; }
+  $("bewaarClub").disabled = false;
+};
+
+// ── start ──
+async function laadAlles() {
+  if (!TOKEN) { toonInstellingen(true); return; }
+  toon("algemeenMelding", "");
+  try { await Promise.all([laadKeuzelijsten(), laadOpdrachten(), laadRuns()]); }
+  catch (e) { toon("algemeenMelding", e.message, "fout"); }
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && TOKEN && $("instellingen").hidden) laadAlles(); });
+laadAlles();
+werkWanneerBij();
+</script>
+</body>
+</html>
